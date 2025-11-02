@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SVG Tag Extractor</title>
+  <style>
+    :root {
+      --primary: #0a1e3d;
+      --accent: #f5c542;
+      --bg: #f9fafb;
+      --text: #222;
+      --card: rgba(255, 255, 255, 0.6);
+      --glass: rgba(255, 255, 255, 0.4);
+      --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: #555;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0d2a5a;
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.95rem;
+      margin-top: 1rem;
+      resize: none;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .helpers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .helpers small {
+      color: #777;
+    }
+
+    .copy-btn {
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .copy-btn:hover {
+      background: #ffda61;
+    }
+
+    .loading {
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SVG Tag Extractor</h1>
+    <p>Paste a .svg URL below and get the pure &lt;svg&gt; tag content.</p>
+
+    <div class="input-group">
+      <input type="text" id="svgUrl" placeholder="Enter SVG URL e.g. https://example.com/icon.svg" />
+      <button onclick="fetchSVG()">Fetch</button>
+    </div>
+
+    <textarea id="output" placeholder="SVG tag will appear here..."></textarea>
+
+    <div class="helpers">
+      <small id="status"></small>
+      <button class="copy-btn" onclick="copySVG()">Copy</button>
+    </div>
+  </div>
+
+  <script>
+    async function fetchSVG() {
+      const url = document.getElementById('svgUrl').value.trim();
+      const output = document.getElementById('output');
+      const status = document.getElementById('status');
+
+      if (!url) {
+        status.textContent = "Please enter a valid SVG URL.";
+        return;
+      }
+
+      status.textContent = "Fetching...";
+      status.classList.add('loading');
+      output.value = '';
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Unable to fetch SVG');
+        const text = await res.text();
+
+        const match = text.match(/<svg[\s\S]*<\/svg>/i);
+        if (match) {
+          output.value = match[0];
+          status.textContent = "SVG extracted successfully.";
+        } else {
+          status.textContent = "No valid <svg> tag found.";
+        }
+      } catch (err) {
+        status.textContent = "Error: " + err.message;
+      } finally {
+        status.classList.remove('loading');
+      }
+    }
+
+    function copySVG() {
+      const output = document.getElementById('output');
+      const status = document.getElementById('status');
+
+      if (!output.value.trim()) {
+        status.textContent = "Nothing to copy.";
+        return;
+      }
+
+      navigator.clipboard.writeText(output.value).then(() => {
+        status.textContent = "Copied to clipboard!";
+      });
+    }
+  </script>
+</body>
+</html>
