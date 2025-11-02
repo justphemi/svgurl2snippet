@@ -10,8 +10,7 @@
       --accent: #f5c542;
       --bg: #f9fafb;
       --text: #222;
-      --card: rgba(255, 255, 255, 0.6);
-      --glass: rgba(255, 255, 255, 0.4);
+      --glass: rgba(255, 255, 255, 0.5);
       --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
 
@@ -32,7 +31,7 @@
       box-shadow: var(--shadow);
       border-radius: 16px;
       width: 90%;
-      max-width: 600px;
+      max-width: 620px;
       padding: 2rem;
       text-align: center;
     }
@@ -85,7 +84,7 @@
 
     textarea {
       width: 100%;
-      height: 250px;
+      height: 260px;
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 1rem;
@@ -100,6 +99,7 @@
       display: flex;
       justify-content: space-between;
       margin-top: 0.5rem;
+      align-items: center;
     }
 
     .helpers small {
@@ -124,12 +124,18 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
+
+    footer {
+      margin-top: 1.2rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>SVG Tag Extractor</h1>
-    <p>Paste a .svg URL below and get the pure &lt;svg&gt; tag content.</p>
+    <p>Paste any public .svg URL below to fetch and view the raw &lt;svg&gt; tag.</p>
 
     <div class="input-group">
       <input type="text" id="svgUrl" placeholder="Enter SVG URL e.g. https://example.com/icon.svg" />
@@ -142,6 +148,8 @@
       <small id="status"></small>
       <button class="copy-btn" onclick="copySVG()">Copy</button>
     </div>
+
+    <footer>Uses a CORS proxy (corsproxy.io) for safer cross-origin SVG loading.</footer>
   </div>
 
   <script>
@@ -149,18 +157,19 @@
       const url = document.getElementById('svgUrl').value.trim();
       const output = document.getElementById('output');
       const status = document.getElementById('status');
+      const proxy = "https://corsproxy.io/?";
 
       if (!url) {
         status.textContent = "Please enter a valid SVG URL.";
         return;
       }
 
-      status.textContent = "Fetching...";
+      status.textContent = "Fetching SVG through proxy...";
       status.classList.add('loading');
       output.value = '';
 
       try {
-        const res = await fetch(url);
+        const res = await fetch(proxy + encodeURIComponent(url));
         if (!res.ok) throw new Error('Unable to fetch SVG');
         const text = await res.text();
 
@@ -169,7 +178,7 @@
           output.value = match[0];
           status.textContent = "SVG extracted successfully.";
         } else {
-          status.textContent = "No valid <svg> tag found.";
+          status.textContent = "No valid <svg> tag found in the file.";
         }
       } catch (err) {
         status.textContent = "Error: " + err.message;
